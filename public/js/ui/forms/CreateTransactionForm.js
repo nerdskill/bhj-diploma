@@ -1,31 +1,49 @@
-/**
- * Класс CreateTransactionForm управляет формой
- * создания новой транзакции
- * */
 class CreateTransactionForm extends AsyncForm {
-  /**
-   * Вызывает родительский конструктор и
-   * метод renderAccountsList
-   * */
   constructor(element) {
-    super(element)
+    super(element);
+    this.renderAccountsList();
   }
 
-  /**
-   * Получает список счетов с помощью Account.list
-   * Обновляет в форме всплывающего окна выпадающий список
-   * */
   renderAccountsList() {
+    const selectElement = this.element.querySelector('.accounts-select');
 
+    // Добавление проверки на авторизованного пользователя
+    if (!User.current()) {
+      console.error('Пользователь не авторизован');
+      return;
+    }
+
+    Account.list({}, (err, response) => {
+      if (err) {
+        console.error('Ошибка при загрузке счетов:', err);
+        return;
+      }
+
+      const accounts = response.data;
+
+      // Накопление разметки с помощью reduce
+      const optionsHTML = accounts.reduce((html, account) => {
+        html += `<option value="${account.id}">${account.name}</option>`;
+        return html;
+      }, '');
+
+      // Присвоение разметки одним действием
+      selectElement.innerHTML = optionsHTML;
+    });
   }
 
-  /**
-   * Создаёт новую транзакцию (доход или расход)
-   * с помощью Transaction.create. По успешному результату
-   * вызывает App.update(), сбрасывает форму и закрывает окно,
-   * в котором находится форма
-   * */
   onSubmit(data) {
+    Transaction.create(data, (err, response) => {
+      if (err) {
+        console.error('Ошибка создания транзакции:', err);
+        return;
+      }
 
+      this.element.reset();
+      const modalId = this.element.closest('.modal').dataset.modalId;
+      const modal = App.getModal(modalId);
+      modal.close();
+      App.update();
+    });
   }
 }
