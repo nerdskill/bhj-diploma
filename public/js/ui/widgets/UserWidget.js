@@ -4,7 +4,7 @@
  * после авторизации или его выхода из системы
  * */
 
-class UserWidget {
+ class UserWidget {
   /**
    * Устанавливает полученный элемент
    * в свойство element.
@@ -12,7 +12,10 @@ class UserWidget {
    * необходимо выкинуть ошибку.
    * */
   constructor(element){
-
+    if (!element) {
+      throw new Error('Элемент не может быть пустым');
+    }
+    this.element = element;
   }
 
   /**
@@ -23,6 +26,15 @@ class UserWidget {
    * авторизованного пользователя
    * */
   update(){
-
+    // const currentUser = User.current();
+    // const nameUser = this.element.querySelector('.user-name');
+    // nameUser.textContent = currentUser.name;
+    const currentUser = User.current();
+    if (currentUser) {
+        const nameUser = this.element.querySelector('.user-name');
+        nameUser.textContent = currentUser.name;
+    } else {
+        console.error('Данные о текущем пользователе не были получены');
   }
+} 
 }
